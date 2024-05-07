@@ -1,9 +1,11 @@
-class_name Shaker
-extends Node
 @icon("res://addons/shaker/shaker.svg")
+extends Node
+class_name Shaker
 
 ## The node to target. Defaults to parent.
 @export var target_node: Node;
+## A more concret node wthin the target
+@export var sub_node : String = ""
 ## The property to shake.
 @export var target_property: StringName = "";
 ## Minimum value.
@@ -18,11 +20,14 @@ extends Node
 @export_range(0.0, 3600, 0.01) var duration: float = 0.8;
 ## Shake fall off curve. Only applies if constant == false.
 @export var fall_off: Curve; 
+
 var timer: Timer = Timer.new();
+var initial_value = null
 
 
 func _ready() -> void:
 	if !target_node: target_node = get_parent();
+	if sub_node != "": target_node = target_node.find_child(sub_node)
 	
 	add_child(timer);
 	timer.wait_time = duration;
@@ -38,8 +43,16 @@ func var_is_valid(node: Node, property: String) -> bool:
 func start(time_sec: float = -1.0) -> void:
 	timer.start(time_sec);
 	if !var_is_valid(target_node, target_property): print("%s does not have a variable called %s" % [target_node, target_property]);
-	else: set_process(true);
-	
+	else: 
+		initial_value = target_node.get(target_property)
+		if !timer.is_connected("timeout", shaking_end): timer.connect("timeout", shaking_end)
+		set_process(true);
+
+##this code will set everything to its previous state.
+func shaking_end():
+	if initial_value == null: return
+	target_node.set(target_property, initial_value)
+
 func stop() -> void:
 	timer.stop();
 	set_process(false);

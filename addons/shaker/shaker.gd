@@ -4,7 +4,7 @@ class_name Shaker
 
 ## The node to target. Defaults to parent.
 @export var target_node: Node;
-## A more concret node wthin the target
+## A more concrete node wthin the target
 @export var sub_node : String = ""
 ## The property to shake.
 @export var target_property: StringName = "";
